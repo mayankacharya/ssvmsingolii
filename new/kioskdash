@@ -1,0 +1,605 @@
+ <div class="form-group row">
+                            <label class="col-sm-12 col-form-label">start time
+                            </label>
+                            <div class="col-sm-12">
+                        <input type="time" [(ngModel)]="start_time" name="start_time"
+                        min="09:00" max="18:00" >
+                        </div>
+
+                        </div>
+
+                         
+
+                         
+                        <div class="form-group row">
+                            <label class="col-sm-12 col-form-label">end time
+                            </label>
+                            <div class="col-sm-12">
+                        <input type="time" [(ngModel)]="end_time" name="end_time"
+                        >
+                        </div>
+
+                        </div>
+
+
+
+
+
+
+
+
+
+kiosk ts
+
+
+
+
+import { Component, OnInit,Inject } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { SidebarService } from 'src/app/core/sidebar/sidebar.service';
+import { ApiService } from 'src/app/core/service/api.service';
+import { AccessIpAddress } from 'src/app/classes/accessIpaddress';
+import { InsertStore } from 'src/app/classes/kiosk';
+import { Kioskmaster } from 'src/app/classes/kiosk-master';
+import { Alert } from 'selenium-webdriver';
+import { AppConfig, APP_CONFIG } from "src/app/app.config";
+
+import * as alertFunctions from './../../../../shared/data/sweet-alerts';
+
+
+@Component({
+  selector: 'app-koisk-security-dashboard',
+  templateUrl: './koisk-security-dashboard.component.html',
+  styleUrls: ['./koisk-security-dashboard.component.scss']
+})
+/**
+   * This is "KoiskSecurityDashboardComponent" class.
+   * @static In this function we are using ngOnInit(), toggleSidebar(),  getSideBarState(), hideSidebar(),
+   * blankip(), onFileChanged(), addIpAddress(), DeleteIpAddress(), changeAuthorization() tabChanged(), upload_image(),
+   * Add_Kiosk(), Setting_Kiosk(), oldthermalcamera(), newthermalcamera(), CH341A_scalefun(), keyspan_scalefun(),
+   * set_lat_long() and ValidateIPaddress() functions.
+   * 
+   */
+export class KoiskSecurityDashboardComponent implements OnInit {
+  title = 'testsecure';
+  [x: string]: any;
+
+
+  start_time:any;
+  end_time:any
+// @ViewChild(MatPaginator) paginator: MatPaginator;
+
+selectedIndex: any;
+model1: any = {};
+Address: any;
+Station_info:any;
+Image: any;
+Ip_address_facepass: any;
+showdb_connection:any=false;
+Ip_address_kiosk: any;
+Ip_address_pdu: any;
+new_thermal_camera:any;
+new_thermal_camera_data:any;
+old_thermal_camera_data:any;
+old_thermal_camera:any;
+CH341A_scale:any;
+keyspan_scale:any;
+keyspan_scale_data:any;
+ CH341A_scale_data:any;
+
+Ip_address_pos: any;
+Ip_address_robotics: any;
+Kiosk_Name: any;
+despense_machine_id: any;
+printer_name: any;
+rtsp_dispense_link:any;
+efax_number:any;
+Kiosk_Size: any;
+Kiosk_Status: any;
+Latitude: any;
+Longitude: any;
+pdu_port: any;
+pos_port: any;
+ipaddress: any;
+emergency_name: any;
+emergency_number: any;
+////////////////////
+Bar_Background: any;
+Bar_Border: any;
+htmlContent:any;
+Bar_Font: any;
+Distance: any;
+Geo_IP: any;
+Init_Zoom: any;
+Language: any;
+Location: any;
+Results_Background: any;
+Results_Font: any;
+Results_dist_font: any;
+Results_high_Bg: any;
+Results_hover_Bg: any;
+Zoom_Here: any;
+onmed_db_connection:any;
+btn_bg: any;
+btn_font: any;
+cont_btn_bg: any;
+cont_btn_font: any;
+dist_toogle: any;
+map_Code: any;
+map_color: any;
+num_list_bg: any;
+num_list_font: any;
+kioskdata: any;
+responsekioskdata: any;
+selectedFile: any;
+postResponse: any;
+footer_image: any;
+selectedFile2: any;
+selectedFile1: any;
+data1: any;
+index: any;
+ip_adress_detail: any;
+consultation_fee: any;
+enable: any = '1';
+ipEnableDisable:any[] = ['Enable', 'Disable'];
+// ip_address_detail: any;
+copy_ip_address_detail: any[] = [];
+ // paginator
+public pageSize = 10;
+public currentPage = 0;
+public totalSize = 0;
+public array_ip_address_detail: any[];
+
+  constructor(public sidebarservice: SidebarService,
+    private router: Router , private model: ApiService, @Inject(APP_CONFIG) private config: AppConfig,) {
+        this.url = config.url;
+     }
+
+/**
+   * This is "toggleSidebar()" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @static In this function we use service called "sidebarservice".
+   */
+
+toggleSidebar() {
+this.sidebarservice.setSidebarState(!this.sidebarservice.getSidebarState());
+}
+ /**
+   * This is "getSideBarState()" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @static In this function we use service called "sidebarservice".
+   */
+getSideBarState() {
+return this.sidebarservice.getSidebarState();
+}
+/**
+   * This is "hideSidebar()" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @static In this function we use service called "sidebarservice".
+   */
+hideSidebar() {
+this.sidebarservice.setSidebarState(true);
+}
+/**
+   * This is "blankip()" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @static In this function we use "alertFunctions".
+   */
+blankip(){
+    alertFunctions.blank_ip_alert();
+  } 
+  /**
+   * This is "ngOnInit()" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @static In this function we use "Get_all_access_ip_address" API.
+   * @return { JSON } Return a string.
+   */
+ngOnInit() {
+   
+    if( this.url=='https://securerthealth.net/api/Securer/'){
+        this.showdb_connection=true;
+                }
+
+ 
+this.router.events.subscribe((evt) => {
+if (!(evt instanceof NavigationEnd)) {
+    return;
+}
+window.scrollTo(0, 0)
+});
+this.model.Get_all_access_ip_address().subscribe(data1 => {
+    this.ip_adress_detail = this.model.decryptResponseToObject(data1);
+    // this.ip_adress_detail = JSON.parse(this.ip_adress_detail);
+    
+        this.copy_ip_address_detail = this.ip_adress_detail;
+        console.log("access", this.copy_ip_address_detail);
+        
+        this.ip_adress_detail.paginator = this.paginator;
+        this.array_ip_address_detail = this.ip_adress_detail;
+        this.totalSize = this.array_ip_address_detail.length;
+        this.iterator();
+  }, err => {
+    this.model.insertErrorLog('ngOnInit(kiosk-security)', err.message);
+  });
+}
+/**
+   * This is "onFileChanged()" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @static This function use for file changing.
+   * @params In this function we use "event" and "img" parameters.
+   */
+onFileChanged(event, img) {
+    if (img === 'image1') {
+        this.selectedFile1 = event.target.files[0];
+        this.upload_image(this.selectedFile1);
+    }
+    if (img === 'footerimage') {
+        this.selectedFile2 = event.target.files[0];
+        this.upload_image(this.selectedFile2);
+    }
+   else{
+    this.selectedFile2 ='';
+    this.upload_image(this.selectedFile2); 
+   }
+}
+
+// addIpAddress() {
+//     const opost = new AccessIpAddress();
+//     opost.ip_address = this.ipaddress;
+//     this.model.Insert_ip_address(opost).subscribe(data1 => {
+//         this.ipaddress = '';
+//         this.ngOnInit();
+//     }, err => {
+//         this.model.insertErrorLog('addIpAddress()', err.message);
+//     });
+// }
+
+// paginator's function
+
+
+
+/**
+   * This is "addIpAddress" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @static we use "Insert_ip_address" API.
+   * @return { JSON } Return a string.
+   */
+  
+public handlePage(e: any) {
+this.currentPage = e.pageIndex;
+this.pageSize = e.pageSize;
+this.iterator();
+}
+/**
+   * This is "DeleteIpAddress" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @static we use "Delete_access_ip_address_by_access_id" API.
+   * @params we use "access_id" parameter.
+   * @return { JSON } Return a string. 
+   */
+private iterator() {
+const end = (this.currentPage + 1) * this.pageSize;
+const start = this.currentPage * this.pageSize;
+const part = this.array_ip_address_detail.slice(start, end);
+this.ip_adress_detail = part;
+}
+
+// paginator's function ends
+
+addIpAddress() {
+if (this.ipaddress === undefined || this.ipaddress === '') {
+// alert('Blank Entry');
+this.blankip();
+} else {
+this.ipaddress = this.ipaddress.trim();
+this.check_ip_address = this.copy_ip_address_detail.filter((element) => {
+return element.ip_address === this.ipaddress;
+});
+// console.clear();
+// console.log(this.check_ip_address);
+if (this.check_ip_address.length > 0) {
+alert('IP-address already exists');
+} else if (this.ValidateIPaddress(this.ipaddress)) {
+const opost = new AccessIpAddress();
+opost.ip_address = this.ipaddress;
+this.model.Insert_ip_address(opost).subscribe(data1 => {
+this.ipaddress = '';
+this.ngOnInit();
+}, err => {
+this.model.insertErrorLog('addIpAddress()', err.message);
+});
+} else {
+alert('Please Enter Valid IP-Address');
+}
+}
+}
+
+DeleteIpAddress(access_id) {
+    console.log(access_id)
+    const delete_confirmation = confirm('Once you delete, Ip access will be restricted ');
+    if (delete_confirmation === true) {
+        this.model.Delete_access_ip_address_by_access_id(access_id).subscribe(data1 => {
+            this.ngOnInit();
+        }, err => {
+            this.model.insertErrorLog('DeleteIpAddress()', err.message);
+        });
+    }
+}
+
+
+/**
+   * This is "changeAuthorization" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @static we use "Update_access_status_access_ip_address_by_access_id" API.
+   * @params we use "access_id", "ip" and "status" parameters.
+   * @return { JSON } Return a string. 
+   */
+changeAuthorization(access_id, ip, status) {
+    const opost = new AccessIpAddress();
+    opost.access_status = status;
+    this.model.Update_access_status_access_ip_address_by_access_id(opost, access_id).subscribe(data1 => {
+        this.ngOnInit();
+    }, err => {
+        this.model.insertErrorLog('DeleteIpAddress()', err.message);
+    });
+
+}
+
+/**
+   * This is "tabChanged" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @params we use "e" parameter.
+   */
+
+
+tabChanged(e) {
+    // console.log(e.index);
+    this.index = e.index;
+}
+/**
+   * This is "upload_image" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @static we use "video_file_upload" API.
+   * @params we use "file" parameter.
+   * @returns { JSON } return a string.
+   */
+upload_image(file) {
+    // alert('file');
+    this.selectedFile = file;
+    const fd = new FormData();
+    fd.append('myfile', this.selectedFile, this.selectedFile.name);
+    // console.log('file fd', fd);
+    this.model.video_file_upload(fd).subscribe(data => {
+        this.postResponse = data;
+        // console.log(this.postResponse);
+    }, err => {
+        this.model.insertErrorLog('upload_image(kiosk-security)', err.message);
+    });
+}
+
+
+
+/**
+   * This is "Add_Kiosk" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @static we use "Insert_kiosk_master" and "Insert_stores" APIs.
+   * @params we use "kioskform" parameter.
+   * @returns { JSON } return a string.
+   */
+
+Add_Kiosk(kioskform) {
+
+  
+if (kioskform.invalid) {
+    this.selectedIndex = 0;
+}
+
+    this.kioskdata = kioskform.value;
+    if (kioskform.valid) {
+        const opost1 = new Kioskmaster;
+        opost1.start_time=this.kioskdata.start_time;
+        opost1.end_time=this.kioskdata.end_time
+        opost1.KioskName = this.kioskdata.Kiosk_Name;
+        opost1.Address1 = this.kioskdata.Address;
+        opost1.KioskSize = this.kioskdata.Kiosk_Size;
+        opost1.Status = this.kioskdata.Kiosk_Status;
+        opost1.Latitude = this.kioskdata.Latitude;
+        opost1.Longitude = this.kioskdata.Longitude;
+        opost1.consultation_fee = this.kioskdata.consultation_fee;
+        opost1.machine_id = this.kioskdata.despense_machine_id;
+        opost1.printer_name = this.kioskdata.printer_name;
+        opost1.emergency_name = this.emergency_name;
+        opost1.Station_info = this.Station_info;
+
+        opost1.onmed_db_connection = this.kioskdata.onmed_db_connection;
+
+        opost1.CH341A_scale= this.CH341A_scale;
+            opost1.keyspan_scale= this.keyspan_scale;
+            opost1.new_thermal_camera= this.new_thermal_camera;
+            opost1.old_thermal_camera =this.old_thermal_camera;
+
+       // alert(opost1.emergency_name)
+        //console.log("emergency_name",opost1.emergency_name)
+       // opost1.emergency_number = this.kioskdata.emergency_number;
+        opost1.rtsp_dispense_link= this.kioskdata.rtsp_dispense_link;
+       opost1.efax_number=this.kioskdata.efax_number;
+        console.log("opost11",opost1)
+
+        if (this.selectedFile2) {
+            opost1.footer_image = this.selectedFile2.name;
+        }
+
+        this.model.Insert_kiosk_master(opost1).subscribe(data1 => {
+            console.log("data1",data1.emergency_name)
+            this.responsekioskdata = this.model.decryptResponseToObject(data1);
+            const opost = new InsertStore;
+            opost.KioskId = this.responsekioskdata.return_id;
+            // console.log(opost.KioskId);
+            opost.k_ip = this.kioskdata.Ip_address_kiosk;
+            opost.p_ip = this.kioskdata.Ip_address_pdu;
+            opost.port_pdu = this.kioskdata.pdu_port;
+            opost.f_ip = this.kioskdata.Ip_address_facepass;
+            opost.r_ip = this.kioskdata.Ip_address_robotics;
+            opost.ps_ip = this.kioskdata.Ip_address_pos;
+            opost.port_pos = this.kioskdata.pos_port;
+            
+
+            if (this.selectedFile1) {
+                opost.cat_img = this.selectedFile1.name;
+            }
+   // console.log("opost11",opost1)
+  //  alert("opost"+opost)
+
+            this.model.Insert_stores(opost).subscribe(data => {
+                // alert('inserted2');
+                this.responsekioskdata = this.model.decryptResponseToObject(data);
+                // this.responsekioskdata = JSON.parse(this.responsekioskdata);
+                // console.log(this.responsekioskdata);
+                if (this.responsekioskdata) {
+                    this.router.navigate(['/admin/kioskdash']);
+
+                }
+            }, err => {
+                this.model.insertErrorLog('Add_Kiosk()', err.message);
+
+            });
+
+        }, err => {
+            this.model.insertErrorLog('Add_Kiosk()', err.message);
+
+        });
+
+    }
+}
+
+Setting_Kiosk(ok) {
+
+}
+
+/**
+   * This is "oldthermalcamera" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @params we use "event" and "data" parameters.
+   */
+
+oldthermalcamera(event:any,data){
+
+    if(data==0)
+    {
+        this.old_thermal_camera=1;
+        this.new_thermal_camera=0;
+    }
+    else {
+        this.old_thermal_camera=0;
+        this.new_thermal_camera=1;
+    }
+    
+                }
+    
+        newthermalcamera(event:any,data){
+    
+            if(data==1){
+                //  alert( this.hidedata);
+                this.old_thermal_camera=0;
+                this.new_thermal_camera=1;
+              //  this.old_thermal_camera=0;
+    
+                }
+              else{
+                  this.new_thermal_camera=0
+                  this.old_thermal_camera=1;
+              }
+    
+             }
+               /**
+   * This is "CH341A_scalefun" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @params we use "event" and "data" parameters.
+   */ 
+      
+             CH341A_scalefun(event:any,data){
+    
+                if(data==0)
+                {
+                    this.CH341A_scale=1;
+                    this.keyspan_scale=0;
+                }
+                else {
+                    this.CH341A_scale=0;
+                    this.keyspan_scale=1;
+                }
+            }
+
+               /**
+   * This is "keyspan_scalefun" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @params we use "event" and "data" parameters.
+   */  
+            keyspan_scalefun(event:any,data){
+    
+                    if(data==1)
+                    {
+                        this.CH341A_scale=0;
+                        this.keyspan_scale=1;
+                    }
+                    else {
+                        this.CH341A_scale=1;
+                        this.keyspan_scale=0;
+                    }
+                }
+
+   /**
+   * This is "set_lat_long" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @params we use "e" parameter.
+   */ 
+
+set_lat_long(e) {
+    if (e.value.Address === '') {
+        this.model1 = { Latitude: '', Longitude: '', Kiosk_Name: e.value.Kiosk_Name, Ip_address_kiosk: e.value.Ip_address_kiosk };
+    } else {
+        // console.log(e.value.Address);
+        // this.add = e;
+        // this.model1 = {this.Address: e}
+        this.model.get_latitude_longitude(e.value.Address).subscribe(data1 => {
+           // console.log(data1);
+            this.data1 = data1;
+
+            this.Latitude = this.data1.results[0].geometry.location.lat;
+            this.Longitude = this.data1.results[0].geometry.location.lng;
+            // console.log( this.Latitude);
+            // console.log( this.Longitude);
+            this.model1 = { Latitude: this.Latitude,
+                 Longitude: this.Longitude, Kiosk_Name: e.value.Kiosk_Name, Ip_address_kiosk: e.value.Ip_address_kiosk };
+            // console.log(e);
+        }, err => {
+            this.model.insertErrorLog('set_lat_long()', err.message);
+
+        });
+        // console.log(e);
+    }
+}
+
+// validate ip adress
+
+
+/**
+   * This is "ValidateIPaddress" function.
+   * @static We are using "KoiskSecurityDashboardComponent" class.
+   * @params we use "ipadd" parameter.
+   */
+ValidateIPaddress(ipadd) {
+    const ipformat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    if (ipadd.match(ipformat)) {
+    return true;
+    } else {
+    return false;
+}
+}
+
+}
+
+
+
+
+

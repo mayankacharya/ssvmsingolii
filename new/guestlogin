@@ -1,0 +1,62 @@
+guest_login() {
+
+    this.model.Get_kiosk_master_by_KioskId(this.kioskId).subscribe(data => {
+        this.KioskDetails = this.model.decryptResponseToObject(data);
+        console.log("this.kkkk", this.KioskDetails.start_time);
+
+        if(this.KioskDetails.start_time <= this.currentDateTime && this.KioskDetails.end_time >=this.currentDateTime)
+        {
+          alert(this.KioskDetails.start_time);
+
+
+          this.video_src = this.oneMomentVideo;
+          // Math.random().toString(36).substring(5)
+          this.consultationRoomID = Math.random().toString(36).replace('0.', '');
+          this.uniqueUrl = this.consultationRoomID;
+          const opost = new Inserturl;
+          opost.city = this.addressDetail.city;
+          opost.state = this.addressDetail.region;
+          opost.country = this.addressDetail.country_name;
+          opost.url_path = this.uniqueUrl;
+          opost.play_pause_status = '0';
+          opost.join_status = '0';
+          opost.end_consul = '0';
+          opost.app_type = 'web';
+          opost.kiosk_id = this.kioskId;
+          opost.ip_address = this.addressDetail.ip;
+          opost.static_ip = localStorage.getItem('IPADD');
+          //close HD cam if it is already working.
+          if (opost.static_ip) {
+            const HDopost = new Kioskmaster();
+            HDopost.hd_cam_status = 0;
+            this.model.Update_hd_cam_status_hd_cam_room_id_kiosk_master_by_KioskId(HDopost, opost.kiosk_id).subscribe((data: any) => { })
+          }
+          this.model.sendRequest(opost, 2).subscribe(data1 => {
+            this.postResponse = data1;
+      
+            if (this.postResponse) {
+              this.localStorage.setItem('guestlogin', 1).subscribe(() => { });
+      
+              this.router.navigate(['/consultation', this.consultationRoomID]).then(nav => {
+              }, err => {
+      
+              });
+            }
+          }, err => {
+      
+            this.model.insertErrorLog('guest_login', err.Message);
+      
+          });
+
+        }
+
+        else{
+          alert("please system is wrong")
+        }
+        
+      })
+
+   
+    // });
+  }
+

@@ -1,0 +1,559 @@
+
+                  <div class="form-group row">
+                    <label class="col-sm-12 col-form-label">start time
+                    </label>
+                    <div class="col-sm-12">
+                <input type="time" [(ngModel)]="start_time" name="start_time"
+                min="09:00" max="18:00" >
+                </div>
+
+                 </div>
+
+
+                 <div class="form-group row">
+                  <label class="col-sm-12 col-form-label">end time
+                  </label>
+                  <div class="col-sm-12">
+              <input type="time" [(ngModel)]="end_time" name="end_time"
+              min="09:00" max="18:00" >
+              </div>
+
+               </div>
+               
+               
+               
+               
+               
+               
+               
+               
+               editkiosk ts
+               
+               
+               
+               import { Inject, Component, NgModule, OnInit } from "@angular/core";
+import { SidebarService } from "src/app/core/sidebar/sidebar.service";
+import { ActivatedRoute } from "@angular/router";
+import { InsertStore } from "src/app/classes/kiosk";
+import { Kioskmaster } from "src/app/classes/kiosk-master";
+import { Router } from "@angular/router";
+import { ApiService } from "src/app/core/service/api.service";
+import { AppConfig, APP_CONFIG } from "src/app/app.config";
+
+//import { AngularEditorConfig } from '@kolkov/angular-editor';
+
+@Component({
+  selector: "app-edit-kiosk",
+  templateUrl: "./edit-kiosk.component.html",
+  styleUrls: ["./edit-kiosk.component.scss"],
+})
+/**
+ * This is "EditKioskComponent" class.
+ * @static In this class we are usingngOnInit(), set_kiosk_data(),onFileChanged(),upload_image(),Update_Kiosk(),enableNpOnly(),deleteImage(),set_lat_long() functions.
+ */
+export class EditKioskComponent implements OnInit {
+  model1: any = {};
+  Address: string;
+  CH341A_scale: any;
+  keyspan_scale: any;
+  keyspan_scale_data: any;
+  CH341A_scale_data: any;
+
+  Image: any;
+  rtsp_dispense_link: any;
+  efax_number: any;
+  emergency_number: any;
+  emergency_name: any;
+  Ip_address_facepass: any;
+  Ip_address_kiosk: any;
+  despense_machine_id: any;
+  Ip_address_pdu: any;
+  Ip_address_pos: any;
+  Ip_address_robotics: any;
+  Kiosk_Name: any;
+  printer_name: any;
+  Kiosk_Size: any;
+  Kiosk_Status: any;
+  Latitude: any;
+  urlchange: any;
+  new_thermal_camera: any;
+  new_thermal_camera_data: any;
+  old_thermal_camera_data: any;
+  old_thermal_camera: any;
+  Longitude: any;
+  pdu_port: any;
+  pos_port: any;
+  onmed_db_connection: any;
+  responsekioskdata: any;
+  kioskdata: any;
+  kiosk_id: any;
+  data1: any;
+  showdb_connection: any = false;
+  data2: any;
+  Image1: any;
+  selectedFile: any;
+  postResponse: any;
+  imgfooter: any = "";
+  image_name: any;
+  img: any;
+  selectedFile1: any;
+  selectedFile2: any;
+  footer_image: any = "";
+  selectedIndex: any;
+  consultation_fee: any;
+  enable_NP: any;
+  url: any;
+  Station_info:any;
+
+
+  //  emergency_name:any;
+  //swyiswg editor
+  htmlContent: any = "";
+  start_time: any;
+  end_time:any;
+ 
+  //   config: AngularEditorConfig = {
+  //     editable: true,
+  //     spellcheck: true,
+  //     height: '15rem',
+  //     minHeight: '5rem',
+  //     placeholder: 'Enter text here...',
+  //     translate: 'no',
+  //     defaultParagraphSeparator: 'p',
+  //     defaultFontName: 'Arial',
+  //     toolbarPosition: 'top',
+  //     customClasses: [
+  //       {
+  //         name: "quote",
+  //         class: "quote",
+  //       },
+  //       {
+  //         name: 'redText',
+  //         class: 'redText'
+  //       },
+  //       {
+  //         name: "titleText",
+  //         class: "titleText",
+  //         tag: "h1",
+  //       },
+  //     ]
+  //   };
+  constructor(
+    private model: ApiService,
+    private route: ActivatedRoute,
+    private router: Router,
+    @Inject(APP_CONFIG) private config: AppConfig
+  ) {
+    {
+      this.url = config.url;
+      // alert( this.url);
+    }
+  }
+
+  ngOnInit() {
+    if (this.url == "https://securerthealth.net/api/Securer/") {
+      this.showdb_connection = true;
+    }
+    this.route.params.subscribe((params) => (this.kiosk_id = params.id));
+    this.model.Get_kiosk_master_by_KioskId(this.kiosk_id).subscribe(
+      (data) => {
+        this.data1 = this.model.decryptResponseToObject(data);
+        console.log("alldata",this.data1);
+
+        this.model.Get_stores_by_KioskId(this.kiosk_id).subscribe((data3) => {
+          this.data2 = this.model.decryptResponseToObject(data3);
+          this.set_kiosk_data(this.data1, this.data2);
+          
+        });
+      },
+      (err) => {
+        this.model.insertErrorLog("ngOnInit(edit-kiosk)", err.message);
+      }
+    );
+  }
+  /**
+   * This is "set_kiosk_data()" function.
+   * @static We are using this function in "EditKioskComponent" class.
+   * @static In this function we are doing kiosk data set.
+   */
+  set_kiosk_data(kioskmaster, insertstore) {
+    // console.log(kioskmaster , insertstore);
+
+    this.start_time = kioskmaster.start_time;
+    this.end_time = kioskmaster.end_time
+    this.pdu_port = insertstore.port_pdu;
+    this.pos_port = insertstore.port_pos;
+    this.Ip_address_kiosk = insertstore.k_ip;
+    // this.Ip_address_kiosk = parseFloat(insertstore.k_ip);
+    this.Ip_address_pdu = insertstore.p_ip;
+    // this.Ip_address_pdu = parseFloat(insertstore.p_ip);
+    this.Ip_address_pos = insertstore.ps_ip;
+    // this.Ip_address_pos = parseFloat(insertstore.ps_ip);
+    this.Ip_address_facepass = insertstore.f_ip;
+    // this.Ip_address_facepass = parseFloat(insertstore.f_ip);
+    // this.Ip_address_robotics = parseFloat(insertstore.r_ip);
+    this.Ip_address_robotics = insertstore.r_ip;
+    this.img = insertstore.cat_img;
+    if (!this.img) {
+      this.img = "";
+    }
+
+    // console.log(insertstore.cat_img);
+    this.Image1 = this.model.file_url + "Userfiles/" + insertstore.cat_img;
+
+    // console.log(this.Image1);
+    console.log(kioskmaster.new_thermal_camera);
+    // alert(kioskmaster.new_thermal_camera)
+    this.new_thermal_camera = kioskmaster.new_thermal_camera;
+    //    alert("kioskmaster.new_thermal_camera"+kioskmaster.new_thermal_camera)
+    this.old_thermal_camera = kioskmaster.old_thermal_camera;
+    //   alert("kioskmaster.old_thermal_camera"+kioskmaster.old_thermal_camera)
+    this.CH341A_scale = kioskmaster.CH341A_scale;
+    this.keyspan_scale = kioskmaster.keyspan_scale;
+
+    //    alert("kioskmaster.CH341A_scale"+kioskmaster.CH341A_scale)
+    //  alert("kioskmaster.keyspan_scale"+kioskmaster.keyspan_scale)
+
+    this.onmed_db_connection = kioskmaster.onmed_db_connection;
+
+    this.Kiosk_Size = kioskmaster.KioskSize;
+    this.Kiosk_Status = kioskmaster.Status;
+    // this.Latitude = parseFloat(kioskmaster.Latitude);
+    // this.Longitude = parseFloat(kioskmaster.Longitude);
+    this.Latitude = kioskmaster.Latitude;
+    this.Longitude = kioskmaster.Longitude;
+    this.Address = kioskmaster.Address1;
+    this.rtsp_dispense_link = kioskmaster.rtsp_dispense_link;
+    this.efax_number = kioskmaster.efax_number;
+    this.despense_machine_id = kioskmaster.machine_id;
+    this.Kiosk_Name = kioskmaster.KioskName;
+    this.printer_name = kioskmaster.printer_name;
+    this.imgfooter = kioskmaster.footer_image;
+    // alert(kioskmaster.emergency_name);
+    this.emergency_number = kioskmaster.emergency_number;
+
+    if (kioskmaster.emergency_name != null) {
+      const emergency_name1 = kioskmaster.emergency_name.replace('"t', "");
+      this.emergency_name = emergency_name1;
+    }
+    // this.emergency_name = kioskmaster.emergency_name;
+    this.Station_info = kioskmaster.Station_info;
+
+    this.consultation_fee = kioskmaster.consultation_fee;
+    this.enable_NP = kioskmaster.enable_complete_soap_note_nurse;
+    if (!this.imgfooter) {
+      this.imgfooter = "";
+    }
+    if (kioskmaster.footer_image) {
+      this.footer_image =
+        this.model.file_url + "Userfiles/" + kioskmaster.footer_image;
+    }
+    /// alert(kioskmaster.footer_image);
+    // console.log(this.footer_image);
+    this.model1 = {
+      Kiosk_Name: this.Kiosk_Name,
+      Longitude: this.Longitude,
+      Latitude: this.Latitude,
+      Ip_address_kiosk: this.Ip_address_kiosk,
+      onmed_db_connection: this.onmed_db_connection,
+      rtsp_dispense_link: this.rtsp_dispense_link,
+    };
+  }
+
+  /**
+   * This is "onFileChanged()" function.
+   * @static We are using this function in "EditKioskComponent" class.
+   * @static In this function we are doing kiosk data set.
+   * @static we are performing upload image function on change.
+   */
+
+  onFileChanged(event, img) {
+    this.footer_image = "";
+    // console.log(event);
+    if (img === "image1") {
+      this.selectedFile1 = event.target.files[0];
+      this.upload_image(this.selectedFile1);
+
+      // console.log(this.selectedFile1);
+    }
+    if (img === "footerimage") {
+      this.selectedFile2 = event.target.files[0];
+      this.upload_image(this.selectedFile2);
+      // console.log(this.selectedFile2);
+    }
+  }
+  /**
+   * This is "upload_image()" function.
+   * @static We are using this function in "EditKioskComponent" class.
+   * @static In this function we are using 'video_file_upload' API.
+   * @static We are uploading file in this function.
+   */
+  upload_image(file) {
+    this.selectedFile = file;
+    const fd = new FormData();
+    fd.append("myfile", this.selectedFile, this.selectedFile.name);
+    // console.log('file fd', fd);
+    this.model.video_file_upload(fd).subscribe(
+      (data) => {
+        this.postResponse = this.model.decryptResponseToObject(data);
+        // this.footer_image = this.model.file_url + this.postResponse.Response_Message;
+        // console.log('fgfgfg', this.footer_image);
+        // console.log(this.postResponse);
+      },
+      (err) => {
+        this.model.insertErrorLog("upload_image(edit-kiosk)", err.message);
+      }
+    );
+  }
+
+  /**
+   * This is "Update_Kiosk()" function.
+   * @static We are using this function in "EditKioskComponent" class.
+   * @static In this function we are using 'Update_stores_by_KioskId','Update_kiosk_master_by_KioskId' API.
+   * @static We are uploading file in this function.
+   */
+  Update_Kiosk(kioskform) {
+    // alert(this.htmlContent);
+    //  console.log(kioskform.value);
+    if (kioskform.invalid) {
+      this.selectedIndex = 0;
+    }
+    // console.log(kioskform.value);
+
+    if (kioskform.valid) {
+      this.kioskdata = kioskform.value;
+      // console.log("KIOSK DATA", this.kioskdata);
+      const opost1 = new Kioskmaster();
+
+      opost1.start_time = this.kioskdata.start_time;
+      opost1.end_time = this.kioskdata.end_time;
+      opost1.KioskName = this.kioskdata.Kiosk_Name;
+      opost1.Address1 = this.kioskdata.Address;
+      opost1.KioskSize = this.kioskdata.Kiosk_Size;
+      opost1.Status = this.kioskdata.Kiosk_Status;
+      opost1.Latitude = this.kioskdata.Latitude;
+      opost1.Longitude = this.kioskdata.Longitude;
+      opost1.rtsp_dispense_link = this.kioskdata.rtsp_dispense_link;
+      opost1.efax_number = this.kioskdata.efax_number;
+      opost1.machine_id = this.kioskdata.despense_machine_id;
+      opost1.consultation_fee = this.consultation_fee;
+      opost1.printer_name = this.kioskdata.printer_name;
+      opost1.onmed_db_connection = this.kioskdata.onmed_db_connection;
+      opost1.old_thermal_camera = this.old_thermal_camera;
+      opost1.new_thermal_camera = this.new_thermal_camera;
+      opost1.CH341A_scale = this.CH341A_scale;
+      opost1.keyspan_scale = this.keyspan_scale;
+      opost1.onmed_db_connection = this.onmed_db_connection;
+      // alert("ed opost1.CH341A_scale"+ opost1.CH341A_scale)
+      //   alert("ed keyspan_scale"+ opost1.keyspan_scale)
+
+      //  alert("ed opost1.new_thermal_camera"+ opost1.new_thermal_camera)
+      //  alert("ed __old_thermal_camera"+ opost1.old_thermal_camera)
+
+      // opost1.emergency_name =  this.kioskdata.emergency_name;
+      // const emergency_name_data=this.emergency_name.split('"t').pop();
+      //  alert(this.kioskdata.emergency_name);
+      // const emergency_name_data = this.emergency_name.replace('"t', "");
+      // alert(this.emergency_name);
+      if (this.emergency_name != null) {
+        //this.announcements_content=this.announcements_content.split('"t').pop()
+
+        this.emergency_name = this.emergency_name.replace('"t', "");
+      }
+
+      // alert(this.emergency_name);
+      opost1.Station_info = this.Station_info;
+
+      opost1.emergency_name = this.emergency_name;
+      opost1.emergency_number = this.kioskdata.emergency_number;
+      // opost1.enable_complete_soap_note_nurse = this.enable_NP;
+
+      if (this.selectedFile2) {
+        opost1.footer_image = this.selectedFile2.name;
+      } else {
+        opost1.footer_image = this.imgfooter;
+      }
+      // console.log(opost1);
+      // console.log('footer image insert', opost1.footer_image);
+      this.model
+        .Update_kiosk_master_by_KioskId(opost1, this.kiosk_id)
+        .subscribe(
+          (data1) => {
+            this.responsekioskdata = this.model.decryptResponseToObject(data1);
+            console.log("this.responseDAta",this.responsekioskdata);
+            
+
+            // this.responsekioskdata = JSON.parse(this.responsekioskdata);
+            //   alert("radhe"+this.responsekioskdata);
+            //   console.log("radhe",this.responsekioskdata);
+
+            const opost = new InsertStore();
+
+            opost.k_ip = this.kioskdata.Ip_address_kiosk;
+            opost.p_ip = this.kioskdata.Ip_address_pdu;
+            opost.port_pdu = this.kioskdata.pdu_port;
+            opost.f_ip = this.kioskdata.Ip_address_facepass;
+            opost.r_ip = this.kioskdata.Ip_address_robotics;
+            opost.ps_ip = this.kioskdata.Ip_address_pos;
+
+            opost.port_pos = this.kioskdata.pos_port;
+
+            if (this.selectedFile1) {
+              opost.cat_img = this.selectedFile1.name;
+            } else {
+              opost.cat_img = this.img;
+            }
+
+            // console.log('cat image insert', opost.cat_img);
+            // console.log(opost);
+            this.model.Update_stores_by_KioskId(opost, this.kiosk_id).subscribe(
+              (data) => {
+                this.responsekioskdata =
+                  this.model.decryptResponseToObject(data);
+                // this.responsekioskdata = JSON.parse(this.responsekioskdata);
+                // console.log(this.responsekioskdata);
+                if (this.responsekioskdata) {
+                  this.router.navigate(["/admin/kioskdash"]);
+                }
+              },
+              (err) => {
+                this.model.insertErrorLog(
+                  "Update_Kiosk(edit-kiosk)",
+                  err.message
+                );
+              }
+            );
+          },
+          (err) => {
+            this.model.insertErrorLog("Update_Kiosk(edit-kiosk)", err.message);
+          }
+        );
+      this.enableNpOnly(this.kioskdata.enable_NP);
+    }
+  }
+
+  oldthermalcamera(event: any, data) {
+    if (data == 0) {
+      this.old_thermal_camera = 1;
+      this.new_thermal_camera = 0;
+    } else {
+      this.old_thermal_camera = 0;
+      this.new_thermal_camera = 1;
+    }
+  }
+
+  newthermalcamera(event: any, data) {
+    if (data == 1) {
+      //  alert( this.hidedata);
+      this.old_thermal_camera = 0;
+      this.new_thermal_camera = 1;
+      //  this.old_thermal_camera=0;
+    } else {
+      this.new_thermal_camera = 0;
+      this.old_thermal_camera = 1;
+    }
+  }
+
+  CH341A_scalefun(event: any, data) {
+    if (data == 0) {
+      this.CH341A_scale = 1;
+      this.keyspan_scale = 0;
+    } else {
+      this.CH341A_scale = 0;
+      this.keyspan_scale = 1;
+    }
+  }
+  keyspan_scalefun(event: any, data) {
+    if (data == 1) {
+      this.CH341A_scale = 0;
+      this.keyspan_scale = 1;
+    } else {
+      this.CH341A_scale = 1;
+      this.keyspan_scale = 0;
+    }
+  }
+
+  /**
+   * This is "enableNpOnly()" function.
+   * @static We are using this function in "EditKioskComponent" class.
+   * @static In this function we are using 'Update_kiosk_master_enable_complete_soap_note_nurse_by_KioskId' API.
+   * @static in this function we are enabling or disabling Np.
+   */
+  enableNpOnly(val) {
+    if (val.checked === true || val === true || val === 1) {
+      this.enable_NP = 1;
+    } else {
+      this.enable_NP = 0;
+    }
+    const opost = new Kioskmaster();
+    opost.enable_complete_soap_note_nurse = this.enable_NP;
+    this.model
+      .Update_kiosk_master_enable_complete_soap_note_nurse_by_KioskId(
+        opost,
+        this.kiosk_id
+      )
+      .subscribe(
+        (data) => {
+          this.postResponse = this.model.decryptResponseToObject(data);
+        },
+        (err) => {
+          this.model.insertErrorLog(
+            "Update_kiosk_master_enable_complete_soap_note_nurse_by_KioskId(edit-kiosk)",
+            err.message
+          );
+        }
+      );
+  }
+/**
+ * This is "deleteImage()" function.
+ * @static We are using this function in "EditKioskComponent" class.
+ * @static We are checking image type.
+ */
+  deleteImage(imgtype) {
+    // alert(imgtype);
+    if (imgtype === "image1") {
+      this.img = "";
+    }
+    if (imgtype === "footerimage") {
+      this.imgfooter = "";
+    }
+  }
+  /**
+ * This is "set_lat_long()" function.
+ * @static We are using this function in "EditKioskComponent" class.
+ * @static In this function we are using 'get_latitude_longitude' API.
+ * @static IN this function we are setting Latitude, Longitude geometry.
+ */
+  set_lat_long(e) {
+    if (e.value.Address === "") {
+      this.model1 = {
+        Latitude: "",
+        Longitude: "",
+        Kiosk_Name: e.value.Kiosk_Name,
+        Ip_address_kiosk: e.value.Ip_address_kiosk,
+      };
+    } else {
+      this.model.get_latitude_longitude(e.value.Address).subscribe(
+        (data1) => {
+          // console.log(data1);
+          this.data1 = data1;
+
+          this.Latitude = this.data1.results[0].geometry.location.lat;
+          this.Longitude = this.data1.results[0].geometry.location.lng;
+          // console.log( this.Latitude);
+          // console.log( this.Longitude);
+          this.model1 = {
+            Latitude: this.Latitude,
+            Longitude: this.Longitude,
+            Kiosk_Name: e.value.Kiosk_Name,
+            Ip_address_kiosk: e.value.Ip_address_kiosk,
+          };
+        },
+        (err) => {
+          this.model.insertErrorLog("set_lat_long(edit-kiosk)", err.message);
+        }
+      );
+    }
+  }
+}
+
